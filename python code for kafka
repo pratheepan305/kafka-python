@@ -1,0 +1,62 @@
+
+Live ISS Nasa = Producer = Kafka topic = Consume = mongo db = application layer 
+
+Aws = produce = kafka = (taland consume) = processing 
+
+1st
+====Pyton import=====
+==we need to import all the libraries needed=
+=json is mostly commanly used message language so its also imported to read the jason languaage==
+=Producer configuration =
+
+
+
+from time import sleep
+import requests
+import json
+from kafka import KafkaProducer
+
+
+2nd
+#producer configuration
+
+
+producer = KafkaProducer(bootstrap_servers=['localhost:9092'],
+ value_serializer=lambda x: 
+        json.dumps(x).encode('utf-8'))
+
+3rd
+#Data fetching
+#the api link url provided for sample of nasa satelite location change it according to the client#
+#response variable is used to get the json content from the url#
+#it generates 50 time messages with 10 sec of sleep time and stops in this sample#
+
+for y in range(50):
+ req = requests.get("http://api.open-notify.org/iss-now")
+ response = json.loads(req.content.decode('utf-8'))
+ print(response)
+ producer.send('topic1', value=response)
+ sleep(10)
+ 
+==========Consumer============== 
+from kafka import KafkaConsumer
+from pymongo import MongoClient
+import json
+
+consumer = KafkaConsumer(
+ 'topic1',
+ bootstrap_servers=['localhost:9092'],
+ auto_offset_reset='earliest',
+ enable_auto_commit=True,
+ group_id='my-group',
+ value_deserializer=lambda x: json.loads(x.decode('utf-8')))
+
+client = MongoClient('localhost:27017')
+collection = client.iss.iss_location
+
+for message in consumer:
+    message = message.value
+    document = json.dumps(message)
+    collection.insert_one(message)
+    print('{} added to {}'.format(message, collection))
+ 
