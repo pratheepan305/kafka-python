@@ -38,10 +38,21 @@ for y in range(50):
  producer.send('topic1', value=response)
  sleep(10)
  
+ 
+ 
+ 
+ 
+ 1st
 ==========Consumer============== 
 from kafka import KafkaConsumer
 from pymongo import MongoClient
 import json
+
+
+2nd
+==consumer configuration==
+==give the server location==
+==earliest to get from the latest message/data available==
 
 consumer = KafkaConsumer(
  'topic1',
@@ -51,8 +62,18 @@ consumer = KafkaConsumer(
  group_id='my-group',
  value_deserializer=lambda x: json.loads(x.decode('utf-8')))
 
+
+3rd
+==to  emter the content in mangoDB this code is used==
+==we create a client for mangoDB==
+
+
 client = MongoClient('localhost:27017')
 collection = client.iss.iss_location
+
+4th
+==to get message using for loop==
+== we get data and insert it into mangodb and at the same time print the output also==
 
 for message in consumer:
     message = message.value
